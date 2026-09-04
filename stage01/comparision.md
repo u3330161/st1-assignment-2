@@ -1,9 +1,9 @@
  ## Limitations
-Data is not saved anywhere.
+Data is saved only in a list, not in file or database.
 It allows double booking.
-Validation is only for patient name.
+Validation is only for patient name and if year is "2024".
 Receptionist cannot enter data, In real life receptionist should be able to type patient name using input but my code doesn't have that option.
-And no way to search or cancel.
+And no way to search, cancel or update on appointment.
 
 ##Human vs AI version Table:
 
