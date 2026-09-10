@@ -1,3 +1,3 @@
 Honestly, before using AI, I built a simple appointment booking. It takes patient name,doctor name and time and saves it in a list, and it shows all appointments 
 but my code was basic and small. AI helped me to understand my mistakes and I learned that I need to add more validation. Yes, AI made assumptions. I tested the code with empty name, and it gave me error, and again I tested with Alice and it worked.And I improved one thing in part G which is year validation
-. And now if someone enters wrong year it will show error. Before it was accepting my year. Overall I learned a lot and it helped me to understand my mistakes.
+. And now if someone enters wrong year it will show error. Before it was accepting any year. Overall I learned a lot and it helped me to understand my mistakes.
