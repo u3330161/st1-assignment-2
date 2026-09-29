@@ -13,23 +13,31 @@
 | R9.Admin can manage clinic locations and practitioner assignment     |	Clinic | 	Behavior: assignPractitioner()                                                      |	Deferred - considered infrastructure |
 | R10.System must maintain data privacy and consent                    | Patient | state: consentFlag, Behavior: giveConsent()                                         | Attribute on Patient, not separate class | 
 ## 2. CRC Cards
-Patient                   
+Patient 
+
 | Responsibilities | Collaborators |
+|---|---|
 | Knows personal details: patientId, name, DOB, contact, address, consentFlag | Appointment |                                             
 | Can request, view, cancel appointments | Practitioner |                                           
 
 Practitioner
+
 | Responsibilities |	Collaborators |
+|---|---|
 | Knows practitionerId, name, specialization, licenseNo, contact |	Appointment |
 | Conducts appointments, creates medical records	| Patient |
 
 Appointment
+
 | Responsibilities |	Collaborators |
+|---|---|
 | Knows appointmentId, dateTime, duration, status, reasonForVisit, clinicLocation |	Patient |
 | Sends reminders | Prescription |
 
 Optional class: MedicalRecord
+
 | Responsibilities |	Collaborators |
+|---|---|
 | Can be finalized only by Practitioner	| Practitioner |
 | Can have multiple Prescriptions |	Prescription |
 ## 3.UML Class Diagram
@@ -50,28 +58,43 @@ MedicalRecord 1 -- 0..* Prescription (contains)
 @startuml
 class Patient {
     - patientId: String
+    - name: String
+    - DOB: Date
     + register()
+    + getHistory()
 }
+
 class Practitioner {
     - practitionerId: String
-    + scheduleAppointment()
+    - specialty: String
+    + setAvailability()
 }
+
 class Appointment {
     - appointmentId: String
+    - dateTime: DateTime
+    - status: String
     + checkAvailability(): bool
+    + confirm()
+    + cancel()
 }
+
 class MedicalRecord {
     - recordId: String
+    - diagnosis: String
     + finalize()
 }
+
 class Prescription {
     - prescriptionId: String
+    - medication: String
     + issue()
 }
-Patient "1" -- "0..*" Appointment 
-Practitioner "1" -- "0..*" Appointment
-Appointment "1" -- "0..1" MedicalRecord
-MedicalRecord "1" -- "0..*" Prescription
+
+Patient "1" -- "0..*" Appointment : books
+Practitioner "1" -- "0..*" Appointment : manages
+Appointment "1" -- "0..1" MedicalRecord : generates
+MedicalRecord "1" -- "0..*" Prescription : contains
 @enduml
 ```
 ## Design Rationale

@@ -7,21 +7,14 @@ And no way to search, cancel or update on appointment.
 
 ##Human vs AI version Table:
 
-Question                    | Human version   | AI version|
-
-| -----| -----| -----|
-
-Easy to understand?         | Yes             | Yes, but  a little bit complex                        |
-
-Runs successfully?          | Yes             | No it added extra things                           |
-
-Uses only required features?| Yes             | Yes                                               |
-
-Adds assumptions?           | No              | Yes                                               |
-
-Handles errors?             | Only little bit | Better than mine                                  |
-
-Could I explain it?         | Yes             | Yes, but I need to check because it's not my logic |
+| Question                     | Human version | AI version                                         |
+|------------------------------| -----|----------------------------------------------------|
+| Easy to understand?          | Yes             | Yes, but  a little bit complex                     |
+| Runs successfully?           | Yes             | No it added extra things                           |
+| Uses only required features? | Yes             | Yes                                                |
+| Adds assumptions?            | No              | Yes                                                |
+| Handles errors?              | Only little bit | Better than mine                                   |
+| Could I explain it?          | Yes             | Yes, but I need to check because it's not my logic |
 
 
 ##Part F:

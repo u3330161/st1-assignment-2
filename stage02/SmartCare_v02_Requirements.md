@@ -7,7 +7,8 @@ Out of Scope: SMS reminders, online payment, facial recognition login, AI treatm
 Small system is for a small clinic only.
 
 ## 2. Stakeholders
-| Stakeholder | Need | Evidence |                  
+| Stakeholder | Need | Evidence | 
+| --- | --- | ---- |
 | Patient | no double booking | client brief says duplicate bookings problem |                            
 | Receptionist | Need to create, cancel, search quickly | Primary users of system, every day tasks |                    
 | Practitioner / Doctor | Need to see my daily appointments | Need schedule to see patients |                                    
@@ -76,7 +77,8 @@ Open Q3: Need separate login for roles or one login is ok?
 Open Q4: How many hours are spent on appointments?        
 
 ## 8. AI Requirements Review Record
-| AI suggestion | Evidence? | Decision | Reason | Verification |                   
+| AI suggestion | Evidence? | Decision | Reason | Verification | 
+| --- | --- | --- | --- | --- |
 | Facial recognition login | No evidence | Rejected | Out of scope,small clinic,no need,privacy risk | No evidence in brief |                 
 | Online payment | No evidence | Rejected | Brief says only patient/doctor/appointment system | Client never said payment |                                              
 | Keep canceled appointments history | Yes evidence | Accepted | Client said limited appointment history is problem | Confirmed from brief |        
