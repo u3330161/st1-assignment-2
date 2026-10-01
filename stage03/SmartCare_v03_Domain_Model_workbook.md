@@ -1,128 +1,120 @@
 # SmartCare v0.3- Domain Model Workbook
 ## 1. Requirement-to-Concept Trace
-| Requirement                                                          | Concept | State/behavior                                                                      | Decision |
-|----------------------------------------------------------------------|---|-------------------------------------------------------------------------------------|---|
-| R1.System should allow patients to register and manage their profile | Patient | state: New,Active,Inactive. Behavior:register(),update profile()                    | Maintain as central domain object-single,focused purpose |
-| R2.System should maintain practitioner details and specializations   | Practitioner | state:Available,on leave,busy. behavior:set availability()                          | Keep as core domain class |
-| R3.Patients can book,reschedule, and cancel appointments             | Appointment | state:Requested,confirmed,completed,canceled. behavior:book(),cancel(),reschedule() | Keep as central association class |
-| R4.System should prevent double booking for clients                  | Appointment/Practitioner | check availability() before conforming                                              | Controlled via centralized booking logic in appointment class |
-| R5.System should store consultation notes and medical history        | MedicalRecord | state:Draft,finalized. behavior:add note(),finalize()                               | Added as optional class separates clinical data from patient identity |
-| R6.Practitioners can issue prescriptions during appointment          | Prescription | States: Issued, Dispensed, Expired. Behavior: issue(), dispense()                   |	Added as optional - extends Appointment |
-| R7.System shall send notifications for appointments                  |	Appointment | 	Behavior: sendReminder()                                                            |	Modeled as operation, not separate class |
-| R8.Patient can view past appointments and records                    |	Patient, Appointment, MedicalRecord | 	Behavior: viewHistory()                                                             | Relationship navigation: Patient -> Appointment -> MedicalRecord |
-| R9.Admin can manage clinic locations and practitioner assignment     |	Clinic | 	Behavior: assignPractitioner()                                                      |	Deferred - considered infrastructure |
-| R10.System must maintain data privacy and consent                    | Patient | state: consentFlag, Behavior: giveConsent()                                         | Attribute on Patient, not separate class | 
+| Requirement                                                  | Concept             | State/behavior                                                        | Decision |
+|--------------------------------------------------------------|---------------------|-----------------------------------------------------------------------|---|
+| R1.Register Patient- need to add/find patient| Patient             |state:patient_id,name,phone,dob/register(),updateProfile()|Maintain as central domain object-single focused purpose|
+| R2.Add Practitioner| Practitioner        |state:Available,On leave/ behavior:setAvailability(),getSchedule()|Keep as core domain class|
+|R3.Book Appointment| Appointment         |State:Requested,Confirmed,Completed,canceled/behavior:book(),reschedule()|Keep as central association class linking Patient & Practitioner|
+|R4. No double booking| Appointment         |Behavior:checkAvailability(),before confirm|Check done in one central place before booking|
+|R5.Search Patient| Patient             |behavior:searchByID(),SearchByPhone()|Solves difficulty finding info|
+|R6.Cancel appointment| Appointment         |state:Canceled/behavior:cancel(reason)|Canceled must stay in history|
+|R7.View history| Patient appointment |behavior:viewHistory(),getbyDate()|Link between Patient and Appointment|
+|R8.View appointments by date/doctor|Practitioner+Appointment|Behavior:getBydate(),getByDoctor()|
+
 ## 2. CRC Cards
 Patient 
 
-| Responsibilities | Collaborators |
-|---|---|
-| Knows personal details: patientId, name, DOB, contact, address, consentFlag | Appointment |                                             
-| Can request, view, cancel appointments | Practitioner |                                           
+| Responsibilities                             | Collaborators |
+|----------------------------------------------|---|
+| Knows patientId, name, DOB, contact, address | Appointment |                                             
+| Can view appointment history                 |  Appointment|                                           
 
 Practitioner
 
 | Responsibilities |	Collaborators |
 |---|---|
-| Knows practitionerId, name, specialization, licenseNo, contact |	Appointment |
-| Conducts appointments, creates medical records	| Patient |
+| Knows practitionerId, name, specialization |	Appointment |
+| Knows availability,can set schedule|Appointment|
 
 Appointment
 
-| Responsibilities |	Collaborators |
-|---|---|
-| Knows appointmentId, dateTime, duration, status, reasonForVisit, clinicLocation |	Patient |
-| Sends reminders | Prescription |
+| Responsibilities                              | 	Collaborators |
+|-----------------------------------------------|--------------|
+| Knows appointmentID,dateTime,status,patientID | Patient      |       
+| Can book(),cancel(),checkAvailability()| Practitioner| 
 
-Optional class: MedicalRecord
+Optional class: ClinicRegistry
 
-| Responsibilities |	Collaborators |
-|---|---|
-| Can be finalized only by Practitioner	| Practitioner |
-| Can have multiple Prescriptions |	Prescription |
+| Responsibilities                     | 	Collaborators        |
+|--------------------------------------|----------------------|
+| Manages all lists,save file,search   | Patient/Practitioner | 	              
+| Checks double booking before booking | 	Appointment          |
+
 ## 3.UML Class Diagram
-
-Patient - patientId, name, DOB - register(), getHistory()                     
-Practitioner - practitionerId, specialty - setAvailability                 
-Appointment - appointmentId, dateTime, status - checkAvailability(), confirm(), cancel()                                    
-MedicalRecord - recordId, diagnosis - finalize()              
-Prescription - prescriptionId, medication - issue()                               
+```mermaid
+classDiagram
+    class Patient {
+        -patientId: string
+        -name: string
+        -DOB: string
+        -contact: string
+        +register()
+        +viewHistory()
+    }
+    class Practitioner {
+        -practitionerId: string
+        -name: string
+        -specialization: string
+        +setAvailability()
+        +getSchedule()
+    }
+    class Appointment {
+        -appointmentId: string
+        -dateTime: string
+        -status: string
+        -patientId: string
+        -doctorId: string
+        +book()
+        +cancel(reason)
+        +checkAvailability()
+    }
+    Patient "1" -- "0..*" Appointment : has
+    Practitioner "1" -- "0..*" Appointment : has
+```
 
 ## Relationships:
-Patient 1 -- 0..* Appointment (books)           
-Practitioner 1 -- 0..* Appointment (manages)            
-Appointment 1 -- 0..1 MedicalRecord (generates)             
-MedicalRecord 1 -- 0..* Prescription (contains)        
+Relationship 1: Patient (1) to Appointment (0..*)
+- One Patient can have zero to many Appointments
+- One Appointment belongs to exactly one Patient
+- Defensible: New patient has 0, old patient has many. Appointment needs patientId to exist.
+- Solves R7 View History
 
-```puml
-@startuml
-class Patient {
-    - patientId: String
-    - name: String
-    - DOB: Date
-    + register()
-    + getHistory()
-}
+Relationship 2: Practitioner (1) to Appointment (0..*)
+- One Practitioner can have zero to many Appointments  
+- One Appointment has exactly one Practitioner
+- Defensible: Prevents double booking R5, allows view by doctor/date R8.
 
-class Practitioner {
-    - practitionerId: String
-    - specialty: String
-    + setAvailability()
-}
+No direct relationship between Patient and Practitioner
+- They connect only through Appointment
+- Keeps domain small and maintainable .
 
-class Appointment {
-    - appointmentId: String
-    - dateTime: DateTime
-    - status: String
-    + checkAvailability(): bool
-    + confirm()
-    + cancel()
-}
-
-class MedicalRecord {
-    - recordId: String
-    - diagnosis: String
-    + finalize()
-}
-
-class Prescription {
-    - prescriptionId: String
-    - medication: String
-    + issue()
-}
-
-Patient "1" -- "0..*" Appointment : books
-Practitioner "1" -- "0..*" Appointment : manages
-Appointment "1" -- "0..1" MedicalRecord : generates
-MedicalRecord "1" -- "0..*" Prescription : contains
-@enduml
-```
 ## Design Rationale
 
-**Class Selection:** 
-Patient and Practitioner are selected as core actors as per R1 and R2. 
-Appointment is the central event class that connects them as per R3. 
-MedicalRecord and Prescription are added to satisfy R5 and R6 for storing consultation notes and issuing prescriptions. 
-Clinic is added as an optional container class for R9 to manage locations.
+## 1. Class Selection:
+I selected 3 classes - Patient, Practitioner, Appointment.
+Patient and Practitioner are needed to store people information.
+Appointment is needed to store booking information.
+I kept only 3 classes to make system small and easy to maintain.
 
-**Responsibility Allocation:** 
-Patient is responsible for personal details (patientId, name, DOB, contact, address, consentFlag) and can request, view, and cancel appointments. 
-Practitioner is responsible for professional details (practitionerId, specialization, licenseNo) and conducts appointments to create medical records. 
-Appointment handles dateTime, duration, reasonForVisit and prevents double booking via checkAvailability() for R4. 
-MedicalRecord handles notes, diagnosis and moves from Draft to Finalized state.
+## 2. Responsibility Allocation:
+Patient - This class only stores patient details like name and contact.
+Practitioner - This class only stores doctor details like name and specialization.
+Appointment - This class does all booking work. 
+It has methods like book(), cancel() and checkAvailability(). 
+All booking logic is in one place.
 
-**Key Relationships:** 
-Patient 1 -- 0..* Appointment means one patient can have many appointments. 
-Practitioner 1 -- 0..* Appointment means one practitioner handles many appointments. 
-Appointment 1 -- 0..1 MedicalRecord means each appointment generates at most one record. 
-MedicalRecord 1 -- 0..* Prescription means one record can have many prescriptions. 
-These multiplicities enforce R4 and R10 privacy via consentFlag.
+## 3. Key Relationships:
+Patient (1) -- (0..*) Appointment : One patient can have many appointments, but one appointment belongs to only one patient.
+Practitioner (1) -- (0..*) Appointment : One doctor can have many appointments, but one appointment belongs to only one doctor.
+There is no direct connection between Patient and Practitioner. They connect only through Appointment. This makes the design simple and clean.
 
 ## AI Design Review Record
 | AI suggestion | Evidence | Decision | Reason | Model change |
 |---|---|---|---|---|
-| Add Clinic class to manage locations and practitioner assignment | R9 - Admin can manage clinic locations and assignment, Week 6 spec | Accepted | Needed to group practitioners and support R9. Clinic is a valid container | Added Clinic class with relationship Clinic 1 -- 0..* Practitioner, with assignPractitioner() behavior |
-| Merge MedicalRecord and Prescription into single Document class | AI suggested simplification to reduce classes | Rejected | R5 and R6 have different lifecycles. Prescription has Issued, Dispensed states, MedicalRecord has Draft, Finalized. Merging violates Single Responsibility | Kept separate classes: MedicalRecord 1 -- 0..* Prescription |
-| Add state machine for Appointment with Requested, Confirmed states | R3 and R7 - booking, rescheduling and sending reminders | Accepted | Appointment needs clear lifecycle to handle booking and notifications | Added states: Requested, Confirmed, Completed, Cancelled, plus Behavior: sendReminder() and checkAvailability() |
-| Add consentFlag attribute and giveConsent() behavior to Patient | R10 - System must maintain data privacy and consent | Accepted | Privacy is critical. Cannot create MedicalRecord without consent check | Added attribute: consentFlag: bool to Patient and Behavior: giveConsent() with state Pending, Given, Revoked |
-| Add checkAvailability() to Practitioner class | R4 - Prevent double booking for clients | Modified | Better placed in Appointment to check both Patient and Practitioner calendars, not just practitioner | Moved behavior to Appointment.checkAvailability() with Collaborators: Patient, Practitioner |
+|Add relationship patient 1 to 0..* Appointment|One patient can have many bookings|Accepted|It is logical and needed for history|Added link between Patient and Appointment|
+|Add relationship Practitioner 1 to 0..* Appointment|One doctor can have many bookings|Accepted|It is correct and makes design simple|Added link between Practitioner and Appointment|
+|Add extra class like MedicalRecord|AI said for future use|Rejected|We need to keep model small and maintainable|No change|
+|Add PatientID and doctorID in Appointment| To connect the classes| Accepted|Needed to link the objects|Added two attributes in Appointment|
+
+## Reflection
+Hardest was deciding Appointment relationship. AI added extra classes like Database.I rejected them because as per stage 2 requirements I only used 3 classes.
